@@ -1,0 +1,121 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+%%% Работа с русским языком
+\usepackage{cmap}					          % поиск в PDF
+\usepackage[T2A]{fontenc}			      % кодировка
+\usepackage[utf8]{inputenc}               % кодировка исходного текста
+\usepackage[english, russian]{babel}   % локализация и переносы
+
+\title{Score matching for the exponential family}
+\author{Набиев Мухаммадшариф Фуркатович}
+\institute{Московский физико-технический институт}
+\date{\today}
+
+
+\begin{document}
+% --- 1st frame -----
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% --- 2st frame -----
+\begin{frame}
+    \frametitle{Постановка задачи}
+    \par 
+    \footnotemark Пусть имеем статистическую модель, которая задана плотностью из экспоненциального семейства распределений
+    \begin{equation}
+        p(\boldsymbol{x}; \boldsymbol{\theta}) = \frac{1}{Z(\boldsymbol{\theta})}e^{\boldsymbol{\theta}^T \boldsymbol{F} (\boldsymbol{x})}, 
+    \end{equation}
+    где $Z(\boldsymbol{\theta})$~--- нормализационная константа и $\boldsymbol{F} (\boldsymbol{x})$~--- достаточная статистика. 
+    \par 
+    Всюду далее будем рассматривать натуральный логарифм от плотности
+    \begin{equation}
+        \ln p(\boldsymbol{x}; \boldsymbol{\theta}) = \sum_{k=1}^K \theta_k F_k (\boldsymbol{x}) - \log Z(\boldsymbol{\theta})
+    \end{equation}
+
+    
+    \footnotetext{Michael U. Gutman - Exercises in Machine Learning}
+\end{frame}
+
+
+% --- 3st frame -----
+\begin{frame}
+    \frametitle{Постановка задачи}
+    Нашей задачей является найти минимум следующей функции
+    \begin{equation}\label{objective-function}
+        J(\boldsymbol{\theta}) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^m \left[ \partial_j \psi_j (\boldsymbol{x}_i;\boldsymbol{\theta}) + \frac{1}{2} \psi_j (\boldsymbol{x}_i; \boldsymbol{\theta})^2 \right], 
+    \end{equation}
+    где $\psi_j(\boldsymbol{x}; \boldsymbol{\theta}) = \frac{\partial \ln p(\boldsymbol{x}; \boldsymbol{\theta})}{\partial x_j}$ и $\partial_j \psi_j (\boldsymbol{x};\boldsymbol{\theta}) = \frac{\partial^2 \ln p(\boldsymbol{x}; \boldsymbol{\theta})}{\partial x_j^2}$
+\end{frame}
+
+
+% --- 4st frame -----
+\begin{frame}
+    \frametitle{Решение}
+    Посчитаем производные 
+    \begin{equation*}
+        \psi_j(\boldsymbol{x}; \boldsymbol{\theta}) = \frac{\partial \ln p(\boldsymbol{x}; \boldsymbol{\theta})}{\partial x_j} = \sum_{k=1}^K \theta_k \frac{\partial F_k(\boldsymbol{x})}{\partial x_j} = \sum_{k=1}^K \theta_k K_{kj}(\boldsymbol{x}),
+    \end{equation*}
+    \begin{equation*}
+        \partial_j \psi_j(\boldsymbol{x}; \boldsymbol{\theta}) = \sum_{k=1}^K \theta_k \frac{\partial^2 F_k(\boldsymbol{x})}{\partial x_j^2} = \sum_{k=1}^K 
+        \theta_k H_{kj}(\boldsymbol{x}), 
+    \end{equation*}
+    где $K_{kj}(\boldsymbol{x}) = \frac{\partial F_k(\boldsymbol{x})}{\partial x_j}$ и $H_{kj}(\boldsymbol{x}) = \frac{\partial^2 F_k(\boldsymbol{x})}{\partial x_j^2}$.
+    По этим элементам построим матрицы $\boldsymbol{K}(\boldsymbol{x})$ и $\boldsymbol{H}(\boldsymbol{x})$.
+\end{frame}
+
+
+% --- 5st frame -----
+\begin{frame}
+    \frametitle{Решение}
+    Возведем в квадрат $\psi_j(\boldsymbol{x}; \boldsymbol{\theta})$
+    \begin{equation}
+        \psi_j(\boldsymbol{x}; \boldsymbol{\theta})^2 = \left[ \sum_{k=1}^K \theta_k K_{kj}(\boldsymbol{x}) \right]^2 = \sum_{k_1=1}^K \sum_{k_2=1}^K K_{k_1j}(\boldsymbol{x}) K_{k_2j}(\boldsymbol{x}) \theta_{k_1} \theta_{k_2}
+    \end{equation}
+    Тогда 
+    \begin{multline}
+        \sum_{j=1}^m \psi_j(\boldsymbol{x}; \boldsymbol{\theta})^2 = 
+        \sum_{j=1}^m \sum_{k_1=1}^K \sum_{k_2=1}^K K_{k_1j}(\boldsymbol{x}) K_{k_2j}(\boldsymbol{x}) \theta_{k_1} \theta_{k_2} = \\ =
+        \sum_{k_1=1}^K \sum_{k_2=1}^K \sum_{j=1}^m K_{k_1j}(\boldsymbol{x}) K_{k_2j}(\boldsymbol{x}) \theta_{k_1} \theta_{k_2} = \\ = \boldsymbol{\theta}^T \boldsymbol{K}(\boldsymbol{x}) \boldsymbol{K}(\boldsymbol{x})^T \boldsymbol{\theta}
+    \end{multline}
+\end{frame}
+
+
+% --- 6st frame -----
+\begin{frame}
+    \frametitle{Решение}
+    Подставим
+    \begin{multline}
+        J(\boldsymbol{\theta}) = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^m \left[ \sum_{k=1}^K \theta_k H_{kj}(\boldsymbol{x}) + \frac{1}{2} \sum_{k_1=1}^K \sum_{k_2=1}^K K_{k_1j}(\boldsymbol{x}) K_{k_2j}(\boldsymbol{x}) \theta_{k_1} \theta_{k_2} \right] = \\ =
+         \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^m \boldsymbol{\theta}^T \boldsymbol{h}_j(\boldsymbol{x}) + \frac{1}{2n} \sum_{i=1}^n \sum_{k_1=1}^K \sum_{k_2=1}^K \sum_{j=1}^m K_{k_1j}(\boldsymbol{x}) K_{k_2j}(\boldsymbol{x}) \theta_{k_1} \theta_{k_2} = \\ =
+         \boldsymbol{\theta}^T \left[ \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^m 
+         \boldsymbol{h}_j(\boldsymbol{x}_i) \right]  + \frac{1}{2} \boldsymbol{\theta}^T \left[ \frac{1}{n} \sum_{i=1}^n \boldsymbol{K}(\boldsymbol{x}_i) \boldsymbol{K}(\boldsymbol{x}_i)^T \right] \boldsymbol{\theta}
+    \end{multline}
+\end{frame}
+
+
+% --- 7st frame -----
+\begin{frame}
+    \frametitle{Решение}
+    Обозначив
+    \begin{equation}
+        \boldsymbol{r} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^m 
+         \boldsymbol{h}_j(\boldsymbol{x}_i) \quad \boldsymbol{M} = \frac{1}{n} \sum_{i=1}^n \boldsymbol{K}(\boldsymbol{x}_i) \boldsymbol{K}(\boldsymbol{x}_i)^T 
+    \end{equation}
+    Получим квадратичную форму следующего вида
+    \begin{equation}
+        J(\boldsymbol{\theta}) = \frac{1}{2} \boldsymbol{\theta}^T \boldsymbol{M} \boldsymbol{\theta} + \boldsymbol{\theta}^T \boldsymbol{r} \quad \qedsymbol
+    \end{equation}
+\end{frame}
+
+
+% --- 8st frame -----
+\begin{frame}
+    \frametitle{Выводы}
+    \begin{itemize}
+        \item Представив $J(\boldsymbol{\theta})$ как квадратичную форму, мы можем аналитически найти минимум из уравнения $\nabla J(\boldsymbol{\theta}^*) = 0$.
+        \item Для нормальных распределений со средним равным 0, оценка $\boldsymbol{\theta}^*$ полученная нашим методом, совпадает с оценкой по методу максимального правдоподобия. 
+    \end{itemize}
+\end{frame}
+
+\end{document}
