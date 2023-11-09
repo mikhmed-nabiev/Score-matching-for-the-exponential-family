@@ -1,1 +1,1 @@
-# Score-matching-for-the-exponential-family
+Exercise 8.1 from the book 'Pen and paper exercises in machine learning'. 
